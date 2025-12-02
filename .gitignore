@@ -52,5 +52,5 @@ android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
 macos/Runner/GoogleService-Info.plist
 
-app_citas/FLUTTER_MIGRATION_GUIDE.md
-app_citas/firestore-structure.md
+FLUTTER_MIGRATION_GUIDE.md
+firestore-structure.md
