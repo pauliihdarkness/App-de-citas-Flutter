@@ -8,6 +8,7 @@ import '../../widgets/custom_input.dart';
 import '../../widgets/gradient_button.dart';
 import '../../providers/auth_provider.dart';
 import '../../../data/models/user_model.dart';
+import '../../../core/services/location_service.dart';
 
 class CompleteProfileScreen extends ConsumerStatefulWidget {
   const CompleteProfileScreen({super.key});
@@ -29,31 +30,58 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
   String _selectedGender = 'Hombre';
   String _selectedOrientation = 'Heterosexual';
   bool _isLoading = false;
+  bool _isDetectingLocation = false;
 
   final List<String> _genders = [
-    'Mujer',
-    'Mujer Trans',
-    'Hombre Trans',
-    'Adrogine',
-    'No binario',
-    'No binario Trans',
-    'Genderfluid',
-    'Genderqueer',
-    'Bigenero',
-    'Hombre',
-    'Otro',
-    'Prefiero no decir',
+    "Mujer",
+    "Transfemenina",
+    "Transmasculino",
+    "Mujer trans",
+    "Hombre trans",
+    "Travesti",
+    "No binario",
+    "Genderqueer",
+    "Genderfluid",
+    "Agénero",
+    "Bigénero",
+    "Trigénero",
+    "Pangénero",
+    "Demigénero",
+    "Demiboy",
+    "Demigirl",
+    "Intergénero",
+    "Andróginx",
+    "Neutrois",
+    "Fluxgender",
+    "Poligénero",
+    "Tercer género",
+    "Dos espíritus (Two-Spirit)",
+    "Hombre",
+    "No especifica",
+    "Prefiero no decirlo",
+    "Otro",
   ];
 
   final List<String> _orientations = [
-    'Heterosexual',
-    'Gay',
-    'Lesbiana',
-    'Pansexual',
-    'Bisexual',
-    'Asexual',
-    'Otro',
-    'Prefiero no decir',
+    "Lesbiana",
+    "Homosexual",
+    "Gay",
+    "Bisexual",
+    "Pansexual",
+    "Asexual",
+    "Demisexual",
+    "Queer",
+    "Sapiosexual",
+    "Polisexual",
+    "Omnisexual",
+    "Androsexual",
+    "Ginesexual",
+    "Graysexual",
+    "Skoliosexual",
+    "Questioning",
+    "Heterosexual",
+    "Prefiero no decirlo",
+    "Otra",
   ];
 
   @override
@@ -99,6 +127,50 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
         _selectedDate = picked;
         _birthDateController.text = DateFormat('dd/MM/yyyy').format(picked);
       });
+    }
+  }
+
+  Future<void> _detectLocation() async {
+    setState(() => _isDetectingLocation = true);
+
+    try {
+      final location = await LocationService.instance.getCurrentLocation();
+
+      if (location != null) {
+        setState(() {
+          _countryController.text = location.country;
+          _stateController.text = location.state;
+          _cityController.text = location.city;
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Ubicación detectada: ${location.city}'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No se pudo detectar la ubicación'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isDetectingLocation = false);
+      }
     }
   }
 
@@ -327,6 +399,37 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                     color: AppColors.textPrimary,
                   ),
                 ),
+                const SizedBox(height: 8),
+                // Botón de detección automática
+                OutlinedButton.icon(
+                  onPressed: _isDetectingLocation ? null : _detectLocation,
+                  icon: _isDetectingLocation
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.primary,
+                          ),
+                        )
+                      : const Icon(LucideIcons.locateFixed),
+                  label: Text(
+                    _isDetectingLocation
+                        ? 'Detectando...'
+                        : 'Detectar mi ubicación',
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    side: const BorderSide(color: AppColors.primary),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 16),
                 CustomInput(
                   label: 'País',
@@ -400,7 +503,7 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: AppColors.textSecondary.withOpacity(0.2)),
           ),
@@ -408,9 +511,26 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
             child: DropdownButton<String>(
               value: value,
               isExpanded: true,
-              icon: const Icon(LucideIcons.chevronDown),
+              icon: const Icon(
+                LucideIcons.chevronDown,
+                color: AppColors.textPrimary,
+              ),
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+              ),
+              dropdownColor: AppColors.surface,
               items: items.map((String item) {
-                return DropdownMenuItem<String>(value: item, child: Text(item));
+                return DropdownMenuItem<String>(
+                  value: item,
+                  child: Text(
+                    item,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 16,
+                    ),
+                  ),
+                );
               }).toList(),
               onChanged: onChanged,
             ),

@@ -9,8 +9,14 @@ class AppColors {
   static const Color textPrimary = Color(0xFFFFFFFF);
   static const Color textSecondary = Color(0xFFB0B0B0);
   static const Color background = Color(0xFF0F0F15);
+  static const Color surface = Color(0xFF1A1A24);
   static const Color glassBg = Color.fromRGBO(255, 255, 255, 0.05);
+  static const Color glassBorder = Color.fromRGBO(255, 255, 255, 0.1);
   static const Color cardBg = Color.fromRGBO(255, 255, 255, 0.08);
+
+  // Aliases for inputs
+  static const Color inputFill = glassBg;
+  static const Color inputBorder = glassBorder;
 }
 
 /// Tema principal de la aplicación

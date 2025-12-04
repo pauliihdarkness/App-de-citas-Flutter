@@ -50,3 +50,12 @@ class UsersNotifier extends StateNotifier<AsyncValue<List<UserModel>>> {
 
 // Provider del índice actual de la tarjeta (se mantiene igual)
 final currentCardIndexProvider = StateProvider<int>((ref) => 0);
+
+// Provider para obtener un usuario por ID
+final userByIdProvider = FutureProvider.family<UserModel?, String>((
+  ref,
+  userId,
+) async {
+  final firestoreService = ref.watch(firestoreServiceProvider);
+  return await firestoreService.getUser(userId);
+});

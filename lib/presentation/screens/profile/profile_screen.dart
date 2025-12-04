@@ -5,7 +5,8 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../config/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../../core/services/seed_data_service.dart';
-import '../../widgets/gradient_button.dart';
+import '../../widgets/profile_photo_gallery.dart';
+import '../../widgets/user_profile_info.dart';
 
 final seedDataServiceProvider = Provider<SeedDataService>(
   (ref) => SeedDataService(),
@@ -16,200 +17,90 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentUser = ref.watch(currentUserProvider);
+    final userProfileAsync = ref.watch(userProfileProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mi Perfil'),
-        actions: [
-          IconButton(
-            icon: const Icon(LucideIcons.settings),
-            onPressed: () {
-              // TODO: Ir a configuración
-            },
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            // Avatar
-            Center(
-              child: Stack(
-                children: [
-                  Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.primary, width: 3),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withOpacity(0.3),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                      image: currentUser?.photoURL != null
-                          ? DecorationImage(
-                              image: NetworkImage(currentUser!.photoURL!),
-                              fit: BoxFit.cover,
-                            )
-                          : null,
-                    ),
-                    child: currentUser?.photoURL == null
-                        ? const Icon(
-                            LucideIcons.user,
-                            size: 60,
-                            color: AppColors.textSecondary,
-                          )
-                        : null,
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: const BoxDecoration(
-                        color: AppColors.accent,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        LucideIcons.camera,
-                        size: 20,
-                        color: Colors.white,
+      backgroundColor: AppColors.background,
+      body: userProfileAsync.when(
+        data: (userProfile) {
+          if (userProfile == null) {
+            return const Center(
+              child: Text(
+                'No se pudo cargar el perfil',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+            );
+          }
+
+          final photos = userProfile.photos.isNotEmpty
+              ? userProfile.photos
+              : ['https://via.placeholder.com/400x600?text=No+Photo'];
+
+          return Stack(
+            children: [
+              // Main scrollable content
+              SingleChildScrollView(
+                child: Column(
+                  children: [
+                    // Photo Gallery
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.6,
+                      child: ProfilePhotoGallery(
+                        photos: photos,
+                        showEditButton: true, // Para ajustar los indicadores
+                        onEditTap: () => context.push('/edit-profile'),
                       ),
                     ),
+
+                    // User Info
+                    UserProfileInfo(user: userProfile),
+                  ],
+                ),
+              ),
+
+              // Floating Edit Button
+              Positioned(
+                bottom: 24,
+                right: 24,
+                child: FloatingActionButton.extended(
+                  onPressed: () => context.push('/edit-profile'),
+                  backgroundColor: AppColors.primary,
+                  icon: const Icon(LucideIcons.edit, color: Colors.white),
+                  label: const Text(
+                    'Editar Perfil',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            // Email
-            Text(
-              currentUser?.email ?? '',
-              style: const TextStyle(
-                fontSize: 16,
-                color: AppColors.textSecondary,
-              ),
-            ),
-
-            const SizedBox(height: 48),
-
-            // Opciones
-            _buildProfileOption(
-              icon: LucideIcons.edit,
-              title: 'Editar Perfil',
-              onTap: () => context.push('/edit-profile'),
-            ),
-            _buildProfileOption(
-              icon: LucideIcons.heart,
-              title: 'Mis Likes',
-              onTap: () {},
-            ),
-            _buildProfileOption(
-              icon: LucideIcons.shield,
-              title: 'Privacidad',
-              onTap: () {},
-            ),
-
-            const SizedBox(height: 48),
-
-            // Seed Data Button (Temporary)
-            Center(
-              child: TextButton.icon(
-                onPressed: () async {
-                  try {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Sembrando datos... 🌱')),
-                    );
-
-                    await ref.read(seedDataServiceProvider).seedUsers();
-
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('¡Datos sembrados con éxito! ✅'),
-                        ),
-                      );
-                    }
-                  } catch (e) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(SnackBar(content: Text('Error: $e')));
-                    }
-                  }
-                },
-                icon: const Icon(
-                  LucideIcons.database,
-                  color: AppColors.primary,
-                ),
-                label: const Text(
-                  'Sembrar Datos de Prueba',
-                  style: TextStyle(color: AppColors.primary),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 24),
-
-            // Cerrar Sesión
-            GradientButton(
-              text: 'Cerrar Sesión',
-              onPressed: () async {
-                await ref.read(authServiceProvider).signOut();
-                if (context.mounted) {
-                  context.go('/login');
-                }
-              },
-              icon: LucideIcons.logOut,
-              // Usar un color diferente para logout si se desea
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProfileOption({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: AppColors.cardBg,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.textSecondary.withOpacity(0.1)),
-      ),
-      child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(icon, color: AppColors.primary, size: 20),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w500,
+              // Settings Button (Top Right)
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 16,
+                right: 16,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.5),
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon: const Icon(LucideIcons.settings, color: Colors.white),
+                    onPressed: () => context.push('/settings'),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stack) => Center(
+          child: Text(
+            'Error: $error',
+            style: const TextStyle(color: Colors.red),
           ),
         ),
-        trailing: const Icon(
-          LucideIcons.chevronRight,
-          color: AppColors.textSecondary,
-          size: 20,
-        ),
-        onTap: onTap,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
   }

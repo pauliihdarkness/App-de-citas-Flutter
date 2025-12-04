@@ -3,10 +3,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../config/theme.dart';
-import '../../widgets/custom_input.dart';
 import '../../widgets/gradient_button.dart';
 import '../../providers/auth_provider.dart';
 import '../../../data/models/user_model.dart';
+import '../../widgets/photo_upload_widget.dart';
+import '../../providers/photos_provider.dart';
+import '../../../core/services/interests_service.dart';
+import '../../../data/models/interest_model.dart';
+
+// Modals
+import '../../widgets/modals/edit_bio_modal.dart';
+import '../../widgets/modals/edit_work_education_modal.dart';
+import '../../widgets/modals/edit_search_intent_modal.dart';
+import '../../widgets/modals/edit_interests_modal.dart';
+import '../../widgets/modals/edit_lifestyle_modal.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -16,52 +26,27 @@ class EditProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
-  final _formKey = GlobalKey<FormState>();
-  late TextEditingController _bioController;
-  late TextEditingController _jobTitleController;
-  late TextEditingController _jobCompanyController;
-  late TextEditingController _jobEducationController;
-  late TextEditingController _heightController;
-
-  // Lifestyle values
-  String _drink = 'Prefiero no decir';
-  String _smoke = 'Prefiero no decir';
-  String _workout = 'Prefiero no decir';
-  String _zodiac = 'Aries';
+  // State variables
+  String _bio = '';
+  UserJob _job = UserJob(title: '', company: '', education: '');
   String _searchIntent = 'No lo sé aún';
-
-  // Interests
-  List<String> _selectedInterests = [];
-  final List<String> _availableInterests = [
-    'Música',
-    'Viajes',
-    'Deportes',
-    'Cine',
-    'Lectura',
-    'Cocina',
-    'Arte',
-    'Tecnología',
-    'Videojuegos',
-    'Fotografía',
-    'Baile',
-    'Animales',
-    'Naturaleza',
-    'Moda',
-    'Política',
-    'Voluntariado',
-  ];
+  List<Interest> _selectedInterests = [];
+  UserLifestyle _lifestyle = UserLifestyle(
+    drink: 'Prefiero no decir',
+    smoke: 'Prefiero no decir',
+    workout: 'Prefiero no decir',
+    zodiac: 'Aries',
+    height: '',
+  );
 
   bool _isLoading = false;
   bool _isInitialized = false;
+  bool _interestsLoaded = false;
 
   @override
   void initState() {
     super.initState();
-    _bioController = TextEditingController();
-    _jobTitleController = TextEditingController();
-    _jobCompanyController = TextEditingController();
-    _jobEducationController = TextEditingController();
-    _heightController = TextEditingController();
+    _loadInterests();
   }
 
   @override
@@ -73,123 +58,171 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     }
   }
 
+  Future<void> _loadInterests() async {
+    try {
+      await InterestsService.instance.loadInterests();
+      if (mounted) {
+        setState(() {
+          _interestsLoaded = true;
+        });
+        _loadUserData();
+      }
+    } catch (e) {
+      print('Error loading interests: $e');
+    }
+  }
+
   void _loadUserData() {
     final userProfile = ref.read(userProfileProvider).value;
     if (userProfile != null) {
-      _bioController.text = userProfile.bio;
-      _jobTitleController.text = userProfile.job.title;
-      _jobCompanyController.text = userProfile.job.company;
-      _jobEducationController.text = userProfile.job.education;
-      _heightController.text = userProfile.lifestyle.height;
-
       setState(() {
-        _drink = userProfile.lifestyle.drink.isNotEmpty
-            ? userProfile.lifestyle.drink
-            : 'Prefiero no decir';
-        _smoke = userProfile.lifestyle.smoke.isNotEmpty
-            ? userProfile.lifestyle.smoke
-            : 'Prefiero no decir';
-        _workout = userProfile.lifestyle.workout.isNotEmpty
-            ? userProfile.lifestyle.workout
-            : 'Prefiero no decir';
-        _zodiac = userProfile.lifestyle.zodiac.isNotEmpty
-            ? userProfile.lifestyle.zodiac
-            : 'Aries';
+        _bio = userProfile.bio;
+        _job = userProfile.job;
         _searchIntent = userProfile.searchIntent.isNotEmpty
             ? userProfile.searchIntent
             : 'No lo sé aún';
-        _selectedInterests = List.from(userProfile.interests);
+        _lifestyle = userProfile.lifestyle;
+
+        if (_interestsLoaded) {
+          _selectedInterests = InterestsService.instance
+              .convertNamesToInterests(userProfile.interests);
+        }
       });
     }
   }
 
-  @override
-  void dispose() {
-    _bioController.dispose();
-    _jobTitleController.dispose();
-    _jobCompanyController.dispose();
-    _jobEducationController.dispose();
-    _heightController.dispose();
-    super.dispose();
-  }
+  // --- Modal Openers ---
 
-  Future<void> _handleSave() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
+  void _openBioModal() async {
+    final result = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => EditBioModal(initialBio: _bio),
+    );
 
-      try {
-        final firestoreService = ref.read(firestoreServiceProvider);
-        final currentUser = ref.read(currentUserProvider);
-        final currentProfile = ref.read(userProfileProvider).value;
-
-        if (currentUser == null || currentProfile == null) return;
-
-        final updatedProfile = UserModel(
-          id: currentProfile.id,
-          uid: currentProfile.uid,
-          name: currentProfile.name,
-          age: currentProfile.age,
-          bio: _bioController.text.trim(),
-          photos: currentProfile.photos,
-          location: currentProfile.location,
-          distance: currentProfile.distance,
-          interests: _selectedInterests,
-          gender: currentProfile.gender,
-          sexualOrientation: currentProfile.sexualOrientation,
-          job: UserJob(
-            title: _jobTitleController.text.trim(),
-            company: _jobCompanyController.text.trim(),
-            education: _jobEducationController.text.trim(),
-          ),
-          lifestyle: UserLifestyle(
-            drink: _drink,
-            smoke: _smoke,
-            workout: _workout,
-            zodiac: _zodiac,
-            height: _heightController.text.trim(),
-          ),
-          searchIntent: _searchIntent,
-          active: currentProfile.active,
-          createdAt: currentProfile.createdAt,
-          updatedAt: DateTime.now(),
-        );
-
-        await firestoreService.updateUserProfile(updatedProfile);
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Perfil actualizado correctamente')),
-          );
-          context.pop();
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error al actualizar perfil: $e')),
-          );
-        }
-      } finally {
-        if (mounted) {
-          setState(() => _isLoading = false);
-        }
-      }
+    if (result != null) {
+      setState(() => _bio = result);
     }
   }
 
-  void _toggleInterest(String interest) {
-    setState(() {
-      if (_selectedInterests.contains(interest)) {
-        _selectedInterests.remove(interest);
-      } else {
-        if (_selectedInterests.length < 8) {
-          _selectedInterests.add(interest);
-        } else {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Máximo 8 intereses')));
-        }
+  void _openWorkEducationModal() async {
+    final result = await showModalBottomSheet<UserJob>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => EditWorkEducationModal(initialJob: _job),
+    );
+
+    if (result != null) {
+      setState(() => _job = result);
+    }
+  }
+
+  void _openSearchIntentModal() async {
+    final result = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => EditSearchIntentModal(initialIntent: _searchIntent),
+    );
+
+    if (result != null) {
+      setState(() => _searchIntent = result);
+    }
+  }
+
+  void _openInterestsModal() async {
+    final result = await showModalBottomSheet<List<Interest>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) =>
+          EditInterestsModal(selectedInterests: _selectedInterests),
+    );
+
+    if (result != null) {
+      setState(() => _selectedInterests = result);
+    }
+  }
+
+  void _openLifestyleModal() async {
+    final result = await showModalBottomSheet<UserLifestyle>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => EditLifestyleModal(initialLifestyle: _lifestyle),
+    );
+
+    if (result != null) {
+      setState(() => _lifestyle = result);
+    }
+  }
+
+  // --- Save Handler ---
+
+  Future<void> _handleSave() async {
+    // Validar fotos mínimas
+    final photosState = ref.read(photosProvider);
+    if (!photosState.meetsMinimum) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Debes subir al menos ${photosState.minPhotos} fotos'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final firestoreService = ref.read(firestoreServiceProvider);
+      final currentUser = ref.read(currentUserProvider);
+      final currentProfile = ref.read(userProfileProvider).value;
+
+      if (currentUser == null || currentProfile == null) return;
+
+      final updatedProfile = UserModel(
+        id: currentProfile.id,
+        uid: currentProfile.uid,
+        name: currentProfile.name,
+        age: currentProfile.age,
+        bio: _bio,
+        photos: photosState.photos,
+        location: currentProfile.location,
+        distance: currentProfile.distance,
+        interests: InterestsService.instance.convertInterestsToNames(
+          _selectedInterests,
+        ),
+        gender: currentProfile.gender,
+        sexualOrientation: currentProfile.sexualOrientation,
+        job: _job,
+        lifestyle: _lifestyle,
+        searchIntent: _searchIntent,
+        active: currentProfile.active,
+        createdAt: currentProfile.createdAt,
+        updatedAt: DateTime.now(),
+      );
+
+      await firestoreService.updateUserProfile(updatedProfile);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Perfil actualizado correctamente')),
+        );
+        context.pop();
       }
-    });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al actualizar perfil: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -206,238 +239,197 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Bio
-                CustomInput(
-                  label: 'Sobre mí',
-                  hint: 'Escribe algo sobre ti...',
-                  icon: LucideIcons.alignLeft,
-                  controller: _bioController,
-                  maxLines: 4,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Fotos
+              const Text(
+                'Mis Fotos',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
                 ),
-                const SizedBox(height: 24),
+              ),
+              const SizedBox(height: 16),
+              const PhotoUploadWidget(),
+              const SizedBox(height: 32),
 
-                // Interests
-                const Text(
-                  'Intereses',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: _availableInterests.map((interest) {
-                    final isSelected = _selectedInterests.contains(interest);
-                    return FilterChip(
-                      label: Text(interest),
-                      selected: isSelected,
-                      onSelected: (_) => _toggleInterest(interest),
-                      selectedColor: AppColors.primary.withOpacity(0.2),
-                      checkmarkColor: AppColors.primary,
-                      labelStyle: TextStyle(
-                        color: isSelected
-                            ? AppColors.primary
-                            : AppColors.textSecondary,
-                      ),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 24),
+              // Bio
+              _buildSectionTile(
+                title: 'Sobre mí',
+                value: _bio.isEmpty ? 'Escribe algo sobre ti...' : _bio,
+                icon: LucideIcons.alignLeft,
+                onTap: _openBioModal,
+              ),
+              const SizedBox(height: 16),
 
-                // Job & Education
-                const Text(
-                  'Trabajo y Educación',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                CustomInput(
-                  label: 'Puesto',
-                  hint: 'Ej: Diseñador UX',
-                  icon: LucideIcons.briefcase,
-                  controller: _jobTitleController,
-                ),
-                const SizedBox(height: 16),
-                CustomInput(
-                  label: 'Empresa',
-                  hint: 'Ej: Google',
-                  icon: LucideIcons.building,
-                  controller: _jobCompanyController,
-                ),
-                const SizedBox(height: 16),
-                CustomInput(
-                  label: 'Educación',
-                  hint: 'Ej: Universidad de Buenos Aires',
-                  icon: LucideIcons.graduationCap,
-                  controller: _jobEducationController,
-                ),
-                const SizedBox(height: 24),
+              // Trabajo y Educación
+              _buildSectionTile(
+                title: 'Trabajo y Educación',
+                value: _getJobSummary(),
+                icon: LucideIcons.briefcase,
+                onTap: _openWorkEducationModal,
+              ),
+              const SizedBox(height: 16),
 
-                // Lifestyle
-                const Text(
-                  'Estilo de Vida',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _buildDropdown(
-                  label: 'Bebida',
-                  value: _drink,
-                  items: [
-                    'Frecuentemente',
-                    'Socialmente',
-                    'Nunca',
-                    'Prefiero no decir',
-                  ],
-                  onChanged: (val) => setState(() => _drink = val!),
-                ),
-                const SizedBox(height: 16),
-                _buildDropdown(
-                  label: 'Tabaco',
-                  value: _smoke,
-                  items: [
-                    'Fumador',
-                    'No fumador',
-                    'Ocasionalmente',
-                    'Prefiero no decir',
-                  ],
-                  onChanged: (val) => setState(() => _smoke = val!),
-                ),
-                const SizedBox(height: 16),
-                _buildDropdown(
-                  label: 'Ejercicio',
-                  value: _workout,
-                  items: ['Diario', 'A veces', 'Nunca', 'Prefiero no decir'],
-                  onChanged: (val) => setState(() => _workout = val!),
-                ),
-                const SizedBox(height: 16),
-                _buildDropdown(
-                  label: 'Signo Zodiacal',
-                  value: _zodiac,
-                  items: [
-                    'Aries',
-                    'Tauro',
-                    'Géminis',
-                    'Cáncer',
-                    'Leo',
-                    'Virgo',
-                    'Libra',
-                    'Escorpio',
-                    'Sagitario',
-                    'Capricornio',
-                    'Acuario',
-                    'Piscis',
-                  ],
-                  onChanged: (val) => setState(() => _zodiac = val!),
-                ),
-                const SizedBox(height: 16),
-                CustomInput(
-                  label: 'Altura (cm)',
-                  hint: 'Ej: 175',
-                  icon: LucideIcons.ruler,
-                  controller: _heightController,
-                  keyboardType: TextInputType.number,
-                ),
-                const SizedBox(height: 24),
+              // Qué busco
+              _buildSectionTile(
+                title: 'Qué busco',
+                value: _searchIntent,
+                icon: LucideIcons.search,
+                onTap: _openSearchIntentModal,
+              ),
+              const SizedBox(height: 16),
 
-                // Search Intent
-                _buildDropdown(
-                  label: 'Busco',
-                  value: _searchIntent,
-                  items: [
-                    'Relación seria',
-                    'Algo casual',
-                    'Amistad',
-                    'No lo sé aún',
-                  ],
-                  onChanged: (val) => setState(() => _searchIntent = val!),
-                ),
+              // Intereses
+              _buildSectionTile(
+                title: 'Intereses',
+                value: _selectedInterests.isEmpty
+                    ? 'Selecciona tus intereses'
+                    : '${_selectedInterests.length} intereses seleccionados',
+                icon: LucideIcons.heart,
+                onTap: _openInterestsModal,
+                child: _selectedInterests.isNotEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: _selectedInterests.map((interest) {
+                            return Chip(
+                              label: Text(
+                                interest.displayName,
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              backgroundColor: AppColors.glassBg,
+                              labelStyle: const TextStyle(
+                                color: AppColors.textSecondary,
+                              ),
+                              padding: EdgeInsets.zero,
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                            );
+                          }).toList(),
+                        ),
+                      )
+                    : null,
+              ),
+              const SizedBox(height: 16),
 
-                const SizedBox(height: 40),
+              // Estilo de Vida
+              _buildSectionTile(
+                title: 'Estilo de Vida',
+                value: _getLifestyleSummary(),
+                icon: LucideIcons.coffee,
+                onTap: _openLifestyleModal,
+              ),
 
-                // Save Button
-                GradientButton(
-                  text: 'Guardar Cambios',
-                  onPressed: _handleSave,
-                  isLoading: _isLoading,
-                ),
-                const SizedBox(height: 24),
-              ],
-            ),
+              const SizedBox(height: 40),
+
+              // Save Button
+              GradientButton(
+                text: 'Guardar Cambios',
+                onPressed: _handleSave,
+                isLoading: _isLoading,
+              ),
+              const SizedBox(height: 24),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildDropdown({
-    required String label,
-    required String value,
-    required List<String> items,
-    required Function(String?) onChanged,
-  }) {
-    // Ensure value is in items, if not, fallback to first item or add it
-    if (!items.contains(value)) {
-      if (items.isNotEmpty) {
-        // value = items.first; // Don't mutate state during build
-        // Instead, we can just display it if we add it to the list temporarily for display
-        // or just accept that it might be inconsistent.
-        // Better approach: Add 'Prefiero no decir' or similar if missing.
-        if (!items.contains('Prefiero no decir')) {
-          items = [...items, 'Prefiero no decir'];
-        }
-        if (!items.contains(value)) {
-          value = items.first;
-        }
-      }
-    }
+  String _getJobSummary() {
+    final parts = <String>[];
+    if (_job.title.isNotEmpty) parts.add(_job.title);
+    if (_job.company.isNotEmpty) parts.add(_job.company);
+    if (_job.education.isNotEmpty) parts.add(_job.education);
+    return parts.isEmpty
+        ? 'Añade detalles de trabajo/estudio'
+        : parts.join(', ');
+  }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: AppColors.textPrimary,
-          ),
+  String _getLifestyleSummary() {
+    final parts = <String>[];
+    if (_lifestyle.drink != 'Prefiero no decir')
+      parts.add('Bebida: ${_lifestyle.drink}');
+    if (_lifestyle.smoke != 'Prefiero no decir')
+      parts.add('Tabaco: ${_lifestyle.smoke}');
+    if (_lifestyle.workout != 'Prefiero no decir')
+      parts.add('Ejercicio: ${_lifestyle.workout}');
+    if (_lifestyle.zodiac.isNotEmpty) parts.add('Signo: ${_lifestyle.zodiac}');
+    if (_lifestyle.height.isNotEmpty)
+      parts.add('Altura: ${_lifestyle.height}cm');
+
+    return parts.isEmpty
+        ? 'Añade detalles de estilo de vida'
+        : parts.join('\n');
+  }
+
+  Widget _buildSectionTile({
+    required String title,
+    required String value,
+    required IconData icon,
+    required VoidCallback onTap,
+    Widget? child,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.glassBg,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.textSecondary.withOpacity(0.1)),
         ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.textSecondary.withOpacity(0.2)),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: value,
-              isExpanded: true,
-              icon: const Icon(LucideIcons.chevronDown),
-              items: items.map((String item) {
-                return DropdownMenuItem<String>(value: item, child: Text(item));
-              }).toList(),
-              onChanged: onChanged,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: AppColors.primary, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+                const Icon(
+                  LucideIcons.chevronRight,
+                  color: AppColors.textSecondary,
+                  size: 20,
+                ),
+              ],
             ),
-          ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.only(left: 32),
+              child: Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                  height: 1.4,
+                ),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (child != null) ...[
+              const SizedBox(height: 8),
+              Padding(padding: const EdgeInsets.only(left: 32), child: child),
+            ],
+          ],
         ),
-      ],
+      ),
     );
   }
 }

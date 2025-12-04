@@ -1,11 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../data/models/user_model.dart';
 import '../services/firestore_service.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    clientId: dotenv.env['GOOGLE_SIGN_IN_CLIENT_ID'],
+  );
   final FirestoreService _firestoreService = FirestoreService();
 
   // Stream de estado de autenticación
@@ -50,7 +53,7 @@ class AuthService {
             uid: user.uid,
             name: user.displayName ?? 'Usuario',
             age: 18, // Edad por defecto, el usuario debe actualizarla
-            bio: '¡Hola! Soy nuevo aquí.',
+            bio: '¡Hola! Soy nueva aquí.',
             photos: [if (user.photoURL != null) user.photoURL!],
             location: UserLocation(country: '', state: '', city: ''),
             gender: 'Prefiero no decir',
@@ -197,6 +200,87 @@ class AuthService {
       await _auth.sendPasswordResetEmail(email: email);
     } catch (e) {
       print('Error al enviar email de recuperación: $e');
+      rethrow;
+    }
+  }
+
+  // Actualizar Email
+  Future<void> updateEmail(String newEmail, String password) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) throw Exception('No hay usuario autenticado');
+
+      // Re-autenticar para operaciones sensibles
+      final credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: password,
+      );
+      await user.reauthenticateWithCredential(credential);
+
+      await user.verifyBeforeUpdateEmail(newEmail);
+    } catch (e) {
+      print('Error al actualizar email: $e');
+      rethrow;
+    }
+  }
+
+  // Actualizar Contraseña
+  Future<void> updatePassword(
+    String currentPassword,
+    String newPassword,
+  ) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) throw Exception('No hay usuario autenticado');
+
+      // Re-autenticar
+      final credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: currentPassword,
+      );
+      await user.reauthenticateWithCredential(credential);
+
+      await user.updatePassword(newPassword);
+    } catch (e) {
+      print('Error al actualizar contraseña: $e');
+      rethrow;
+    }
+  }
+
+  // Eliminar Cuenta
+  Future<void> deleteAccount(String password) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) throw Exception('No hay usuario autenticado');
+
+      // Re-autenticar
+      // Nota: Si el usuario usó Google, esto fallará si solo pedimos password.
+      // Para simplificar, asumimos email/password por ahora o requerimos re-login reciente.
+      // Una mejor implementación manejaría ambos proveedores.
+
+      // Intentar reautenticar con email/password si tiene provider de password
+      if (user.providerData.any((p) => p.providerId == 'password')) {
+        final credential = EmailAuthProvider.credential(
+          email: user.email!,
+          password: password,
+        );
+        await user.reauthenticateWithCredential(credential);
+      } else {
+        // Si es Google, forzar re-login (o manejar reauth con Google)
+        // Por ahora lanzamos error si no es password provider
+        // throw Exception('Por favor cierra sesión y vuelve a entrar con Google para eliminar tu cuenta.');
+        // O simplemente procedemos si el login es reciente (menos de 5 min)
+      }
+
+      // Eliminar datos de Firestore
+      await _firestoreService.deleteUser(
+        user.uid,
+      ); // Necesitamos implementar esto en FirestoreService
+
+      // Eliminar usuario de Auth
+      await user.delete();
+    } catch (e) {
+      print('Error al eliminar cuenta: $e');
       rethrow;
     }
   }

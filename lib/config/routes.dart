@@ -1,13 +1,15 @@
+import 'package:app_citas/presentation/screens/profile/profile_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../presentation/screens/auth/login_screen.dart';
 import '../presentation/screens/auth/register_screen.dart';
 import '../presentation/screens/auth/complete_profile_screen.dart';
-import '../presentation/screens/home/home_screen.dart';
-import '../presentation/screens/profile/profile_screen.dart';
+import '../presentation/screens/main/main_scaffold.dart';
 import '../presentation/screens/profile/edit_profile_screen.dart';
 import '../presentation/screens/profile/user_detail_screen.dart';
+import '../presentation/screens/chat/chat_screen.dart';
+import '../presentation/screens/settings/settings_screen.dart';
 import '../presentation/providers/auth_provider.dart';
 
 /// Configuración de rutas de la aplicación
@@ -70,19 +72,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/home',
         name: 'home',
-        builder: (context, state) => const HomeScreen(),
+        builder: (context, state) => const MainScaffold(),
       ),
+
       GoRoute(
-        path: '/chat',
+        path: '/chat/:conversationId',
         name: 'chat',
-        builder: (context, state) => const ChatListScreen(),
-      ),
-      GoRoute(
-        path: '/chat/:chatId',
-        name: 'chatRoom',
         builder: (context, state) {
-          final chatId = state.pathParameters['chatId']!;
-          return ChatRoomScreen(chatId: chatId);
+          final conversationId = state.pathParameters['conversationId']!;
+          return ChatScreen(conversationId: conversationId);
         },
       ),
       GoRoute(
@@ -100,8 +98,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'userDetail',
         builder: (context, state) {
           final userId = state.pathParameters['userId']!;
-          return UserDetailScreen(userId: userId);
+          final hideActions =
+              state.uri.queryParameters['hideActions'] == 'true';
+          return UserDetailScreen(userId: userId, hideActions: hideActions);
         },
+      ),
+      GoRoute(
+        path: '/settings',
+        name: 'settings',
+        builder: (context, state) => const SettingsScreen(),
       ),
     ],
   );
@@ -125,31 +130,12 @@ class GoRouterRefreshStream extends ChangeNotifier {
   }
 }
 
-// Placeholder screens - estas se implementarán más adelante
+// Placeholder screens
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const Scaffold(body: Center(child: CircularProgressIndicator()));
-  }
-}
-
-class ChatListScreen extends StatelessWidget {
-  const ChatListScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(body: Center(child: Text('Chat List Screen')));
-  }
-}
-
-class ChatRoomScreen extends StatelessWidget {
-  final String chatId;
-  const ChatRoomScreen({super.key, required this.chatId});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(body: Center(child: Text('Chat Room: $chatId')));
   }
 }

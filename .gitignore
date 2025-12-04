@@ -53,4 +53,5 @@ ios/Runner/GoogleService-Info.plist
 macos/Runner/GoogleService-Info.plist
 
 FLUTTER_MIGRATION_GUIDE.md
-firestore-structure.md
+firestore.indexes.json
+firestore.rules

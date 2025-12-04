@@ -30,15 +30,42 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png" />
 
-  <!-- Google Sign-In -->
-  <meta name="google-signin-client_id"
-    content="$GOOGLE_SIGN_IN_CLIENT_ID">
-
   <title>app_citas</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- CropperJS for image_cropper -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+
+  <style>
+    /* Fix for Image Cropper on mobile */
+    .cropper-container {
+      max-height: 290px !important;
+      max-width: 100% !important;
+    }
+
+    .croppie-container {
+      max-height: 290px !important;
+      display: flex !important;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .cr-boundary {
+      max-width: 100% !important;
+      max-height: 290px !important;
+    }
+
+    /* Ensure dialog fits on screen */
+    .swal2-popup {
+      max-height: 90dvh !important;
+      overflow-y: auto !important;
+    }
+  </style>
 </head>
 
 <body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 

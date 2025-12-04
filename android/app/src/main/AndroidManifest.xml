@@ -1,8 +1,45 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- ============================================ -->
+    <!-- INTERNET PERMISSION -->
+    <!-- ============================================ -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    
+    <!-- ============================================ -->
+    <!-- CAMERA PERMISSION -->
+    <!-- ============================================ -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+    
+    <!-- ============================================ -->
+    <!-- STORAGE PERMISSIONS (Android 10-13) -->
+    <!-- ============================================ -->
+    <!-- READ_EXTERNAL_STORAGE: Para Android 10-13 (API 29-33) -->
+    <uses-permission 
+        android:name="android.permission.READ_EXTERNAL_STORAGE" 
+        android:maxSdkVersion="33"/>
+    
+    <!-- WRITE_EXTERNAL_STORAGE: Solo para Android 10 (API 29) -->
+    <uses-permission 
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE" 
+        android:maxSdkVersion="29"/>
+    
+    <!-- ============================================ -->
+    <!-- MEDIA PERMISSIONS (Android 13+) -->
+    <!-- ============================================ -->
+    <!-- READ_MEDIA_IMAGES: Para Android 13+ (API 33+) -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    
+    <!-- ============================================ -->
+    <!-- LOCATION PERMISSIONS -->
+    <!-- ============================================ -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    
     <application
         android:label="app_citas"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:requestLegacyExternalStorage="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -41,5 +78,7 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- Google Sign-In package visibility (required for Android 11+) -->
+        <package android:name="com.google.android.gms" />
     </queries>
 </manifest>

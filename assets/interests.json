@@ -1,0 +1,462 @@
+{
+    "Entretenimiento": [
+        {
+            "emoji": "🎳",
+            "nombre": "Bowling"
+        },
+        {
+            "emoji": "🛍",
+            "nombre": "Compras"
+        },
+        {
+            "emoji": "🧚",
+            "nombre": "Cosplay"
+        },
+        {
+            "emoji": "♠️",
+            "nombre": "Juegos de cartas"
+        },
+        {
+            "emoji": "🎲",
+            "nombre": "Juegos de mesa"
+        },
+        {
+            "emoji": "🎼",
+            "nombre": "Musicales"
+        },
+        {
+            "emoji": "🎈",
+            "nombre": "Planificador de fiestas"
+        },
+        {
+            "emoji": "🎙️",
+            "nombre": "Pódcasts"
+        },
+        {
+            "emoji": "💢",
+            "nombre": "Anime"
+        },
+        {
+            "emoji": "🇮🇳",
+            "nombre": "Bollywood"
+        },
+        {
+            "emoji": "❤️",
+            "nombre": "Comedia romántica"
+        },
+        {
+            "emoji": "🤣",
+            "nombre": "Comedias"
+        },
+        {
+            "emoji": "🕹️",
+            "nombre": "Concursos"
+        },
+        {
+            "emoji": "🩸",
+            "nombre": "Crímenes reales"
+        },
+        {
+            "emoji": "🤠",
+            "nombre": "Dibujos animados"
+        },
+        {
+            "emoji": "🎥",
+            "nombre": "Documentales"
+        }
+    ],
+    "Comidas y bebidas": [
+        {
+            "emoji": "🍖",
+            "nombre": "Asados"
+        },
+        {
+            "emoji": "🍺",
+            "nombre": "Cerveza"
+        },
+        {
+            "emoji": "🍫",
+            "nombre": "Chocolate"
+        },
+        {
+            "emoji": "🥘",
+            "nombre": "Cocinar"
+        },
+        {
+            "emoji": "🥡",
+            "nombre": "Comida para llevar"
+        },
+        {
+            "emoji": "🍕",
+            "nombre": "Comida rápida"
+        },
+        {
+            "emoji": "🥦",
+            "nombre": "Comida sana"
+        },
+        {
+            "emoji": "🍰",
+            "nombre": "Experto en repostería"
+        }
+    ],
+    "Salidas": [
+        {
+            "emoji": "🥂",
+            "nombre": "Bares"
+        },
+        {
+            "emoji": "🍾",
+            "nombre": "Brunch con bebida libre"
+        },
+        {
+            "emoji": "🥞",
+            "nombre": "Brunchear los findes"
+        },
+        {
+            "emoji": "☕",
+            "nombre": "Cafeterías"
+        },
+        {
+            "emoji": "🍜",
+            "nombre": "Cena con amistades"
+        },
+        {
+            "emoji": "🍴",
+            "nombre": "Citas"
+        },
+        {
+            "emoji": "🍽",
+            "nombre": "Comer fuera"
+        },
+        {
+            "emoji": "🎟️",
+            "nombre": "Conciertos"
+        }
+    ],
+    "Lifestyle": [
+        {
+            "emoji": "🌲",
+            "nombre": "Amante de la naturaleza"
+        },
+        {
+            "emoji": "🐱",
+            "nombre": "Amantes de animales"
+        },
+        {
+            "emoji": "💕",
+            "nombre": "Amo los abrazos"
+        },
+        {
+            "emoji": "💝",
+            "nombre": "Amor propio"
+        },
+        {
+            "emoji": "📝",
+            "nombre": "Aprendiz de por vida"
+        },
+        {
+            "emoji": "⭐️",
+            "nombre": "Astrología"
+        },
+        {
+            "emoji": "🦋",
+            "nombre": "Autoexpresión"
+        },
+        {
+            "emoji": "👑",
+            "nombre": "Autorrealizado"
+        }
+    ],
+    "Música": [
+        {
+            "emoji": "🥁",
+            "nombre": "Afrobeats"
+        },
+        {
+            "emoji": "🪕",
+            "nombre": "Desi"
+        },
+        {
+            "emoji": "🕺",
+            "nombre": "Disco"
+        },
+        {
+            "emoji": "🎛️",
+            "nombre": "DJing"
+        },
+        {
+            "emoji": "🤖",
+            "nombre": "EDM"
+        },
+        {
+            "emoji": "🎵",
+            "nombre": "Fan de la música"
+        },
+        {
+            "emoji": "🎧",
+            "nombre": "Hip-hop"
+        },
+        {
+            "emoji": "🎸",
+            "nombre": "Indie"
+        }
+    ],
+    "Lectura y libros": [
+        {
+            "emoji": "📖",
+            "nombre": "Biografías"
+        },
+        {
+            "emoji": "🔖",
+            "nombre": "Club de lectura"
+        },
+        {
+            "emoji": "💥",
+            "nombre": "Cómics"
+        },
+        {
+            "emoji": "🕯️",
+            "nombre": "Ficción clásica"
+        },
+        {
+            "emoji": "🎩",
+            "nombre": "Ficción histórica"
+        },
+        {
+            "emoji": "🏆",
+            "nombre": "Libros de autoayuda"
+        },
+        {
+            "emoji": "👽",
+            "nombre": "Libros de ciencia ficción"
+        },
+        {
+            "emoji": "🐉",
+            "nombre": "Libros de fantasía"
+        }
+    ],
+    "Autocuidado": [
+        {
+            "emoji": "🧴",
+            "nombre": "Aromaterapia"
+        },
+        {
+            "emoji": "🛁",
+            "nombre": "Autocuidado"
+        },
+        {
+            "emoji": "🌞",
+            "nombre": "Cuidado de la piel"
+        },
+        {
+            "emoji": "🖊",
+            "nombre": "Diario personal"
+        },
+        {
+            "emoji": "🧖",
+            "nombre": "Días de spa"
+        },
+        {
+            "emoji": "🧘",
+            "nombre": "Meditación"
+        },
+        {
+            "emoji": "☁️",
+            "nombre": "Mindfulness"
+        },
+        {
+            "emoji": "🛋️",
+            "nombre": "Relax"
+        },
+        {
+            "emoji": "💬",
+            "nombre": "Terapia"
+        }
+    ],
+    "Habilidades y pasatiempos": [
+        {
+            "emoji": "🎭",
+            "nombre": "Actuación"
+        },
+        {
+            "emoji": "💫",
+            "nombre": "Alma creativa"
+        },
+        {
+            "emoji": "🚙",
+            "nombre": "Amante de autos"
+        },
+        {
+            "emoji": "🎪",
+            "nombre": "Artes circenses"
+        },
+        {
+            "emoji": "✂️",
+            "nombre": "Artesanías y arte"
+        },
+        {
+            "emoji": "🌌",
+            "nombre": "Astronomía"
+        },
+        {
+            "emoji": "💻",
+            "nombre": "Bloguear"
+        },
+        {
+            "emoji": "⚱️",
+            "nombre": "Cerámica"
+        }
+    ],
+    "Deportes y fitness": [
+        {
+            "emoji": "💪",
+            "nombre": "Amante del gym"
+        },
+        {
+            "emoji": "🥋",
+            "nombre": "Artes marciales"
+        },
+        {
+            "emoji": "🎽",
+            "nombre": "Atletismo"
+        },
+        {
+            "emoji": "🔴",
+            "nombre": "Billar"
+        },
+        {
+            "emoji": "🥊",
+            "nombre": "Box"
+        },
+        {
+            "emoji": "🤿",
+            "nombre": "Buceo"
+        },
+        {
+            "emoji": "🏸",
+            "nombre": "Bádminton"
+        },
+        {
+            "emoji": "🏀",
+            "nombre": "Básquetbol"
+        }
+    ],
+    "Tecnología": [
+        {
+            "emoji": "🖥️",
+            "nombre": "Electrónica"
+        },
+        {
+            "emoji": "📱",
+            "nombre": "Genio de la tecnología"
+        },
+        {
+            "emoji": "🧠",
+            "nombre": "IA"
+        },
+        {
+            "emoji": "🖨️",
+            "nombre": "Impresión 3D"
+        },
+        {
+            "emoji": "💻",
+            "nombre": "Programación"
+        },
+        {
+            "emoji": "🦾",
+            "nombre": "Robótica"
+        },
+        {
+            "emoji": "😎",
+            "nombre": "RV"
+        }
+    ],
+    "Viajes": [
+        {
+            "emoji": "⛰️",
+            "nombre": "Aventura"
+        },
+        {
+            "emoji": "🏕",
+            "nombre": "Campamento"
+        },
+        {
+            "emoji": "🛳️",
+            "nombre": "Cruceros en barco"
+        },
+        {
+            "emoji": "🌳",
+            "nombre": "Escapadas al campo"
+        },
+        {
+            "emoji": "🧳",
+            "nombre": "Escapadas de fin de semana"
+        },
+        {
+            "emoji": "🔎",
+            "nombre": "Explorador urbano"
+        },
+        {
+            "emoji": "✈️",
+            "nombre": "Jetsetter"
+        },
+        {
+            "emoji": "🦁",
+            "nombre": "Safari"
+        }
+    ],
+    "Valores": [
+        {
+            "emoji": "🖤",
+            "nombre": "Black Lives Matter"
+        },
+        {
+            "emoji": "✊",
+            "nombre": "Derechos humanos"
+        },
+        {
+            "emoji": "🏳️‍🌈",
+            "nombre": "Derechos LGBTQIA+"
+        },
+        {
+            "emoji": "💖",
+            "nombre": "Derechos trans"
+        },
+        {
+            "emoji": "💜",
+            "nombre": "Feminismo"
+        },
+        {
+            "emoji": "🌿",
+            "nombre": "Medio ambiente"
+        },
+        {
+            "emoji": "👏",
+            "nombre": "Positividad corporal"
+        },
+        {
+            "emoji": "♻️",
+            "nombre": "Sostenibilidad"
+        },
+        {
+            "emoji": "🚫",
+            "nombre": "Stop Asian Hate"
+        },
+        {
+            "emoji": "🙋",
+            "nombre": "Voluntariado"
+        },
+        {
+            "emoji": "🌎",
+            "nombre": "Conquistar mundo"
+        },
+        {
+            "emoji": "🐈‍⬛",
+            "nombre": "Ser Suprema"
+        },
+        {
+            "emoji": "🔪",
+            "nombre": "Purgar personas"
+        }
+    ]
+}
