@@ -37,6 +37,7 @@ dependencies:
   cloud_firestore: ^5.5.2
   firebase_storage: ^12.3.7
   firebase_messaging: ^15.1.5 # Para FCM
+  flutter_local_notifications: ^18.0.1 # Notificaciones locales
   google_sign_in: ^6.2.2 # Google Sign-In
 
   # Gestión de Estado (Recomendado: Riverpod)
@@ -93,6 +94,9 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  
+  # Para generar íconos de la app
+  flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

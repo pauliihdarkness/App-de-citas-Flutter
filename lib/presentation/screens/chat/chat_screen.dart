@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../config/theme.dart';
+import '../../../core/services/chat_service.dart';
 import '../../providers/chat_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/users_provider.dart';
@@ -22,6 +23,30 @@ class ChatScreen extends ConsumerStatefulWidget {
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _textController = TextEditingController();
+  final ChatService _chatService = ChatService();
+
+  @override
+  void initState() {
+    super.initState();
+    // Marcar mensajes como leídos al abrir el chat
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _markMessagesAsRead();
+    });
+  }
+
+  Future<void> _markMessagesAsRead() async {
+    final currentUser = ref.read(currentUserProvider);
+    final userId = currentUser?.uid;
+
+    if (userId != null) {
+      try {
+        await _chatService.markAsRead(widget.conversationId, userId);
+        print('✅ Mensajes marcados como leídos');
+      } catch (e) {
+        print('❌ Error marcando mensajes como leídos: $e');
+      }
+    }
+  }
 
   @override
   void dispose() {

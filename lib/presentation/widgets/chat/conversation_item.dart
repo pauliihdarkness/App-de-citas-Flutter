@@ -5,6 +5,8 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../../../config/theme.dart';
 import '../../../data/models/conversation_model.dart';
 import '../../providers/users_provider.dart';
+import '../../providers/notification_provider.dart';
+import '../notification_badge.dart';
 
 class ConversationItem extends ConsumerWidget {
   final ConversationModel conversation;
@@ -47,25 +49,76 @@ class ConversationItem extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
-              // Foto de perfil
-              otherUserAsync.when(
-                data: (otherUser) {
-                  if (otherUser == null) {
-                    return _buildDefaultAvatar();
-                  }
+              // Foto de perfil con badge de mensajes no leídos
+              Consumer(
+                builder: (context, ref, child) {
+                  final unreadCount = ref.watch(
+                    conversationUnreadCountProvider(conversation.id),
+                  );
 
-                  return CircleAvatar(
-                    radius: 28,
-                    backgroundImage: otherUser.photos.isNotEmpty
-                        ? NetworkImage(otherUser.photos.first)
-                        : null,
-                    child: otherUser.photos.isEmpty
-                        ? const Icon(LucideIcons.user)
-                        : null,
+                  return unreadCount.when(
+                    data: (count) => NotificationBadge(
+                      count: count,
+                      child: otherUserAsync.when(
+                        data: (otherUser) {
+                          if (otherUser == null) {
+                            return _buildDefaultAvatar();
+                          }
+
+                          return CircleAvatar(
+                            radius: 28,
+                            backgroundImage: otherUser.photos.isNotEmpty
+                                ? NetworkImage(otherUser.photos.first)
+                                : null,
+                            child: otherUser.photos.isEmpty
+                                ? const Icon(LucideIcons.user)
+                                : null,
+                          );
+                        },
+                        loading: () => _buildDefaultAvatar(),
+                        error: (_, __) => _buildDefaultAvatar(),
+                      ),
+                    ),
+                    loading: () => otherUserAsync.when(
+                      data: (otherUser) {
+                        if (otherUser == null) {
+                          return _buildDefaultAvatar();
+                        }
+
+                        return CircleAvatar(
+                          radius: 28,
+                          backgroundImage: otherUser.photos.isNotEmpty
+                              ? NetworkImage(otherUser.photos.first)
+                              : null,
+                          child: otherUser.photos.isEmpty
+                              ? const Icon(LucideIcons.user)
+                              : null,
+                        );
+                      },
+                      loading: () => _buildDefaultAvatar(),
+                      error: (_, __) => _buildDefaultAvatar(),
+                    ),
+                    error: (_, __) => otherUserAsync.when(
+                      data: (otherUser) {
+                        if (otherUser == null) {
+                          return _buildDefaultAvatar();
+                        }
+
+                        return CircleAvatar(
+                          radius: 28,
+                          backgroundImage: otherUser.photos.isNotEmpty
+                              ? NetworkImage(otherUser.photos.first)
+                              : null,
+                          child: otherUser.photos.isEmpty
+                              ? const Icon(LucideIcons.user)
+                              : null,
+                        );
+                      },
+                      loading: () => _buildDefaultAvatar(),
+                      error: (_, __) => _buildDefaultAvatar(),
+                    ),
                   );
                 },
-                loading: () => _buildDefaultAvatar(),
-                error: (_, __) => _buildDefaultAvatar(),
               ),
 
               const SizedBox(width: 12),

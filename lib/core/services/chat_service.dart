@@ -1,11 +1,14 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../data/models/conversation_model.dart';
 import '../../data/models/message_model.dart';
+import 'notification_service.dart';
 
 /// Servicio para gestionar el chat en tiempo real con Firestore
 class ChatService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final NotificationService _notificationService = NotificationService();
 
   /// Generar ID único para match (ordenado alfabéticamente)
   /// Formato: userId1_userId2 donde userId1 < userId2
@@ -29,6 +32,7 @@ class ChatService {
         'createdAt': FieldValue.serverTimestamp(),
         'lastMessage': null,
         'lastMessageTime': null,
+        'unreadCount': {userId1: 0, userId2: 0},
       });
     }
 
@@ -91,11 +95,48 @@ class ChatService {
     // Agregar mensaje a la subcolección
     await matchRef.collection('messages').add(messageData);
 
-    // Actualizar el match con el último mensaje
+    // Obtener el otro usuario del match
+    final matchData = matchDoc.data() as Map<String, dynamic>;
+    final users = List<String>.from(matchData['users'] ?? []);
+    final recipientId = users.firstWhere(
+      (id) => id != senderId,
+      orElse: () => '',
+    );
+
+    // Incrementar contador de mensajes no leídos para el destinatario
+    final unreadCount = matchData['unreadCount'] as Map<String, dynamic>? ?? {};
+    final currentCount = (unreadCount[recipientId] as num?)?.toInt() ?? 0;
+    unreadCount[recipientId] = currentCount + 1;
+
+    // Actualizar el match con el último mensaje y contador
     await matchRef.update({
       'lastMessage': text,
       'lastMessageTime': FieldValue.serverTimestamp(),
+      'unreadCount': unreadCount,
     });
+
+    // Obtener información del remitente para la notificación
+    try {
+      final senderDoc = await _firestore
+          .collection('users')
+          .doc(senderId)
+          .get();
+      if (senderDoc.exists) {
+        // Obtener tokens del destinatario
+        final recipientTokens = await _notificationService.getUserTokens(
+          recipientId,
+        );
+
+        // Por ahora solo mostramos notificación local si el destinatario está en la app
+        // En el futuro, aquí se llamaría a Cloud Functions para enviar push notification
+        if (recipientTokens.isNotEmpty) {
+          print('📱 Destinatario tiene ${recipientTokens.length} token(s) FCM');
+          // TODO: Implementar envío de notificación push via Cloud Functions
+        }
+      }
+    } catch (e) {
+      print('⚠️ Error obteniendo información del remitente: $e');
+    }
   }
 
   /// Marcar mensajes como leídos
@@ -109,13 +150,17 @@ class ChatService {
         .where('read', isEqualTo: false)
         .get();
 
-    if (messagesSnapshot.docs.isEmpty) return;
-
-    final batch = _firestore.batch();
-    for (final doc in messagesSnapshot.docs) {
-      batch.update(doc.reference, {'read': true});
+    if (messagesSnapshot.docs.isNotEmpty) {
+      final batch = _firestore.batch();
+      for (final doc in messagesSnapshot.docs) {
+        batch.update(doc.reference, {'read': true});
+      }
+      await batch.commit();
     }
-    await batch.commit();
+
+    // Siempre resetear contador de mensajes no leídos para este usuario
+    // (incluso si no había mensajes sin leer, para corregir inconsistencias)
+    await matchRef.update({'unreadCount.$userId': 0});
   }
 
   /// Eliminar un match (unmatch)

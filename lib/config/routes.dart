@@ -10,12 +10,13 @@ import '../presentation/screens/profile/edit_profile_screen.dart';
 import '../presentation/screens/profile/user_detail_screen.dart';
 import '../presentation/screens/chat/chat_screen.dart';
 import '../presentation/screens/settings/settings_screen.dart';
+import '../presentation/screens/notifications/notification_center_screen.dart';
 import '../presentation/providers/auth_provider.dart';
 
 /// Configuración de rutas de la aplicación
 /// Configuración de rutas de la aplicación
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
+  // final authState = ref.watch(authStateProvider);
 
   return GoRouter(
     initialLocation: '/login',
@@ -23,26 +24,56 @@ final routerProvider = Provider<GoRouter>((ref) {
       ref.watch(userProfileProvider.stream),
     ),
     redirect: (context, state) {
-      final isLoggedIn = authState.value != null;
+      final authStateValue = ref.read(authStateProvider);
+      final userProfileState = ref.read(userProfileProvider);
+
+      print('🔄 [ROUTER] Location: ${state.matchedLocation}');
+      print(
+        '👤 [ROUTER] Auth Loading: ${authStateValue.isLoading}, Has Value: ${authStateValue.hasValue}, Value: ${authStateValue.value?.uid}',
+      );
+      print(
+        '📄 [ROUTER] Profile Loading: ${userProfileState.isLoading}, Has Value: ${userProfileState.hasValue}, Active: ${userProfileState.value?.active}',
+      );
+
+      // Si estamos cargando autenticación o perfil, mostrar splash
+      if (authStateValue.isLoading || userProfileState.isLoading) {
+        print('⏳ [ROUTER] Still loading... showing splash');
+        return '/splash';
+      }
+
+      final isLoggedIn = authStateValue.value != null;
       final isLoggingIn = state.matchedLocation == '/login';
       final isRegistering = state.matchedLocation == '/register';
+      final isSplash = state.matchedLocation == '/splash';
       final isCompletingProfile = state.matchedLocation == '/complete-profile';
 
       if (!isLoggedIn) {
-        if (isLoggingIn || isRegistering) return null;
+        if (isLoggingIn || isRegistering || isSplash) return null;
+        print('🚫 [ROUTER] Not logged in, redirecting to login');
         return '/login';
       }
 
       // Si está logueado, verificar si el perfil está completo
-      final userProfile = ref.read(userProfileProvider).value;
-      final isProfileComplete = userProfile?.active ?? false;
+      final userProfile = userProfileState.value;
+
+      // Si no hay perfil cargado aún (pero no está loading), esperar
+      if (userProfile == null) {
+        print('⚠️ [ROUTER] Logged in but profile is null');
+        return null;
+      }
+
+      final isProfileComplete = userProfile.active;
 
       if (!isProfileComplete) {
         if (isCompletingProfile) return null;
+        print(
+          '📝 [ROUTER] Profile incomplete, redirecting to complete-profile',
+        );
         return '/complete-profile';
       }
 
-      if (isLoggingIn || isRegistering || isCompletingProfile) {
+      if (isLoggingIn || isRegistering || isCompletingProfile || isSplash) {
+        print('✅ [ROUTER] All good, redirecting to home');
         return '/home';
       }
 
@@ -107,6 +138,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/settings',
         name: 'settings',
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: '/notifications',
+        name: 'notifications',
+        builder: (context, state) => const NotificationCenterScreen(),
       ),
     ],
   );

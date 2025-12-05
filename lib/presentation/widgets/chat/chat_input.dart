@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../config/theme.dart';
 
@@ -42,22 +43,40 @@ class ChatInput extends StatelessWidget {
                     color: AppColors.textSecondary.withOpacity(0.2),
                   ),
                 ),
-                child: TextField(
-                  controller: controller,
-                  maxLines: null,
-                  textCapitalization: TextCapitalization.sentences,
-                  style: TextStyle(color: AppColors.textPrimary, fontSize: 15),
-                  decoration: InputDecoration(
-                    hintText: 'Escribe un mensaje...',
-                    hintStyle: TextStyle(color: AppColors.textSecondary),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                  onSubmitted: (text) {
-                    if (text.trim().isNotEmpty && !isSending) {
-                      onSend(text);
+                child: Focus(
+                  onKey: (node, event) {
+                    // Detectar si se presionó Enter
+                    if (event is RawKeyDownEvent &&
+                        event.logicalKey == LogicalKeyboardKey.enter) {
+                      // Si Shift está presionado, permitir salto de línea
+                      if (event.isShiftPressed) {
+                        return KeyEventResult.ignored;
+                      }
+
+                      // Si no hay Shift, enviar mensaje
+                      final text = controller.text;
+                      if (text.trim().isNotEmpty && !isSending) {
+                        onSend(text);
+                      }
+                      return KeyEventResult.handled;
                     }
+                    return KeyEventResult.ignored;
                   },
+                  child: TextField(
+                    controller: controller,
+                    maxLines: null,
+                    textCapitalization: TextCapitalization.sentences,
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 15,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Escribe un mensaje...',
+                      hintStyle: TextStyle(color: AppColors.textSecondary),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
                 ),
               ),
             ),

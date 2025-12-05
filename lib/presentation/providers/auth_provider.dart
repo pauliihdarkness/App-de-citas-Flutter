@@ -34,8 +34,8 @@ final userProfileProvider = StreamProvider<UserModel?>((ref) {
       if (user == null) return Stream.value(null);
       return firestoreService.getUserStream(user.uid);
     },
-    loading: () => const Stream.empty(),
-    error: (_, __) => const Stream.empty(),
+    loading: () => Stream.value(null),
+    error: (_, __) => Stream.value(null),
   );
 });
 
