@@ -7,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../../core/services/seed_data_service.dart';
 import '../../widgets/profile_photo_gallery.dart';
 import '../../widgets/user_profile_info.dart';
+import '../../widgets/booster_promo_modal.dart';
 
 final seedDataServiceProvider = Provider<SeedDataService>(
   (ref) => SeedDataService(),
@@ -55,6 +56,23 @@ class ProfileScreen extends ConsumerWidget {
                     // User Info
                     UserProfileInfo(user: userProfile),
                   ],
+                ),
+              ),
+
+              // Floating Boost Button
+              Positioned(
+                bottom: 90,
+                right: 24,
+                child: FloatingActionButton(
+                  heroTag: 'boost_button',
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => const BoosterPromoModal(),
+                    );
+                  },
+                  backgroundColor: AppColors.secondary,
+                  child: const Icon(LucideIcons.zap, color: Colors.white),
                 ),
               ),
 

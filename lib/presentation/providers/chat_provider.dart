@@ -56,7 +56,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
   }
 
   // Enviar un mensaje
-  Future<void> sendMessage(String text) async {
+  Future<void> sendMessage(String text, {String type = 'text'}) async {
     if (_userId == null || text.trim().isEmpty) return;
 
     try {
@@ -66,6 +66,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
         conversationId: _conversationId,
         senderId: _userId,
         text: text.trim(),
+        type: type,
       );
 
       state = state.copyWith(isSending: false);

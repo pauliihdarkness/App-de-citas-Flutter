@@ -90,6 +90,7 @@ class ChatService {
       'text': text,
       'timestamp': FieldValue.serverTimestamp(),
       'read': false,
+      'type': type,
     };
 
     // Agregar mensaje a la subcolección

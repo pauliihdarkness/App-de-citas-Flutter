@@ -60,13 +60,16 @@ class MessageBubble extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        message.text,
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: isMe ? Colors.white : AppColors.textPrimary,
+                      if (message.type == 'image')
+                        _buildImage(context)
+                      else
+                        Text(
+                          message.text,
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: isMe ? Colors.white : AppColors.textPrimary,
+                          ),
                         ),
-                      ),
                       const SizedBox(height: 4),
                       Row(
                         mainAxisSize: MainAxisSize.min,
@@ -101,6 +104,44 @@ class MessageBubble extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildImage(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 240, maxHeight: 300),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Image.network(
+          message.text,
+          fit: BoxFit.cover,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Container(
+              width: 240,
+              height: 200,
+              color: AppColors.glassBg,
+              child: const Center(
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            );
+          },
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              width: 240,
+              height: 200,
+              color: AppColors.glassBg,
+              child: const Center(
+                child: Icon(
+                  Icons.broken_image_rounded,
+                  color: AppColors.textSecondary,
+                  size: 40,
+                ),
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 

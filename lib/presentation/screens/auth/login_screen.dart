@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../config/theme.dart';
 import '../../widgets/custom_input.dart';
@@ -359,10 +360,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   )
                 else ...[
-                  Image.network(
+                  // Use SvgPicture to render the SVG icon safely (works on web)
+                  SvgPicture.network(
                     'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
                     width: 24,
                     height: 24,
+                    placeholderBuilder: (context) => const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2.0),
+                    ),
+                    fit: BoxFit.contain,
                   ),
                   const SizedBox(width: 12),
                   const Text(

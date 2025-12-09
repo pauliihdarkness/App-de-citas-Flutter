@@ -36,9 +36,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       );
 
       // Si estamos cargando autenticación o perfil, mostrar splash
-      if (authStateValue.isLoading || userProfileState.isLoading) {
-        print('⏳ [ROUTER] Still loading... showing splash');
-        return '/splash';
+      try {
+        if (authStateValue.isLoading || userProfileState.isLoading) {
+          print('⏳ [ROUTER] Still loading... showing splash');
+          return '/splash';
+        }
+      } catch (e, st) {
+        print('❌ [ROUTER] Error during loading check: $e');
+        print(st);
+        // Si hay un error al evaluar el estado, evitar bloquear la navegación
+        return null;
       }
 
       final isLoggedIn = authStateValue.value != null;
@@ -48,7 +55,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isCompletingProfile = state.matchedLocation == '/complete-profile';
 
       if (!isLoggedIn) {
-        if (isLoggingIn || isRegistering || isSplash) return null;
+        // Allow access only to login/register while unauthenticated.
+        // Do NOT keep the user on /splash once loading finished.
+        if (isLoggingIn || isRegistering) return null;
         print('🚫 [ROUTER] Not logged in, redirecting to login');
         return '/login';
       }
@@ -62,12 +71,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      final isProfileComplete = userProfile.active;
+      // `active` puede ser null; tratar sólo true como perfil completo
+      final isProfileComplete = (userProfile.active == true);
 
       if (!isProfileComplete) {
         if (isCompletingProfile) return null;
         print(
-          '📝 [ROUTER] Profile incomplete, redirecting to complete-profile',
+          '📝 [ROUTER] Profile incomplete (active=${userProfile.active}), redirecting to complete-profile',
         );
         return '/complete-profile';
       }

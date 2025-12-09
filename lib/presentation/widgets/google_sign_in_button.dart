@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../config/theme.dart';
 import '../providers/auth_provider.dart';
@@ -81,17 +82,16 @@ class _GoogleSignInButtonState extends ConsumerState<GoogleSignInButton> {
                     ),
                   )
                 else ...[
-                  Image.network(
+                  SvgPicture.network(
                     'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
                     width: 24,
                     height: 24,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Icon(
-                        Icons.g_mobiledata,
-                        size: 24,
-                        color: AppColors.primary,
-                      );
-                    },
+                    placeholderBuilder: (context) => const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2.0),
+                    ),
+                    fit: BoxFit.contain,
                   ),
                   const SizedBox(width: 12),
                   const Text(
