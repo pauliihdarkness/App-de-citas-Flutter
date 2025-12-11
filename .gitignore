@@ -61,3 +61,4 @@ macos/Runner/GoogleService-Info.plist
 FLUTTER_MIGRATION_GUIDE.md
 firestore.indexes.json
 firestore.rules
+DEPLOYMENT_CHECKLIST.md

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -87,14 +88,20 @@ class _AppBootstrapState extends State<AppBootstrap> {
     _initInProgress = true;
 
     try {
-      _log('📦 [BOOTSTRAP] Loading .env...');
-      try {
-        await dotenv.load(fileName: '.env');
-        _log('✅ [BOOTSTRAP] .env loaded successfully');
-      } catch (envError) {
-        _log('⚠️ [BOOTSTRAP] .env not found or error loading: $envError');
-        _log('ℹ️ [BOOTSTRAP] Continuing without .env (using defaults)');
-        // Don't fail the whole app if .env is missing
+      // Only load .env for non-web platforms
+      // On web, Netlify provides env vars directly
+      if (!kIsWeb) {
+        _log('📦 [BOOTSTRAP] Loading .env...');
+        try {
+          await dotenv.load(fileName: '.env');
+          _log('✅ [BOOTSTRAP] .env loaded successfully');
+        } catch (envError) {
+          _log('⚠️ [BOOTSTRAP] .env not found or error loading: $envError');
+          _log('ℹ️ [BOOTSTRAP] Continuing without .env (using defaults)');
+          // Don't fail the whole app if .env is missing
+        }
+      } else {
+        _log('ℹ️ [BOOTSTRAP] Running on web, skipping .env file (using Netlify env vars)');
       }
 
       _log('🔥 [BOOTSTRAP] Initializing Firebase...');

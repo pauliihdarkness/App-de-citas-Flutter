@@ -4,6 +4,39 @@ import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:html' as html show window;
+
+/// Helper function to get environment variable
+/// Tries dotenv first, then falls back to window.__env if on web
+String _getEnv(String key) {
+  // Try dotenv first (for non-web platforms)
+  if (dotenv.env.containsKey(key)) {
+    final value = dotenv.env[key];
+    if (value != null && value.isNotEmpty) {
+      return value;
+    }
+  }
+  
+  // On web, try to get from window.__env (set by index.html)
+  if (kIsWeb) {
+    try {
+      // Use dynamic casting to avoid compilation errors on non-web platforms
+      final jsEnv = (html.window as dynamic).__env;
+      
+      if (jsEnv != null) {
+        final value = jsEnv[key];
+        if (value != null && value is String && value.isNotEmpty) {
+          return value;
+        }
+      }
+    } catch (e) {
+      print('⚠️ Could not access window.__env.$key: $e');
+    }
+  }
+  
+  print('⚠️ Environment variable not found: $key');
+  return '';
+}
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -45,12 +78,12 @@ class DefaultFirebaseOptions {
   }
 
   static FirebaseOptions get web => FirebaseOptions(
-    apiKey: dotenv.env['FIREBASE_WEB_API_KEY'] ?? '',
-    appId: dotenv.env['FIREBASE_WEB_APP_ID'] ?? '',
-    messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID'] ?? '',
-    projectId: dotenv.env['FIREBASE_PROJECT_ID'] ?? '',
-    authDomain: '${dotenv.env['FIREBASE_PROJECT_ID']}.firebaseapp.com',
-    storageBucket: '${dotenv.env['FIREBASE_PROJECT_ID']}.appspot.com',
+    apiKey: _getEnv('FIREBASE_WEB_API_KEY'),
+    appId: _getEnv('FIREBASE_WEB_APP_ID'),
+    messagingSenderId: _getEnv('FIREBASE_MESSAGING_SENDER_ID'),
+    projectId: _getEnv('FIREBASE_PROJECT_ID'),
+    authDomain: '${_getEnv('FIREBASE_PROJECT_ID')}.firebaseapp.com',
+    storageBucket: '${_getEnv('FIREBASE_PROJECT_ID')}.appspot.com',
   );
 
   static FirebaseOptions get android => FirebaseOptions(
