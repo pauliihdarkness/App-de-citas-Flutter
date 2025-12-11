@@ -47,10 +47,16 @@ app.*.map.json
 # Environment variables (Firebase credentials)
 .env
 
+# Auto-generated config files (generated at build time)
+web/config.js
+
 # Firebase configuration files
 android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
 macos/Runner/GoogleService-Info.plist
+
+# Netlify build output (if building locally)
+.netlify/
 
 FLUTTER_MIGRATION_GUIDE.md
 firestore.indexes.json
