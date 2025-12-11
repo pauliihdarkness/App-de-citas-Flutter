@@ -20,10 +20,6 @@
   command = "bash install-flutter.sh && node build-config.js && flutter build web --release --web-renderer canvaskit"
   publish = "build/web"
 
-# Cache Flutter build artifacts to speed up builds (save build minutes)
-[[plugins]]
-  package = "@netlify/plugin-caching"
-
 # SPA redirect - all routes go to index.html
 [[redirects]]
   from = "/*"
