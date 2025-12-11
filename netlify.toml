@@ -2,7 +2,7 @@
 # Free tier limits: 300 build minutes/month, 100GB bandwidth, 125k function invocations
 
 [build]
-  command = "bash install-flutter.sh && export PATH=\"$PATH:/opt/buildhome/flutter/bin\" && node build-config.js && flutter build web --release --web-renderer canvaskit"
+  command = "bash install-flutter.sh && export PATH=\"$PATH:/opt/buildhome/flutter/bin\" && node build-config.js && flutter build web --release"
   publish = "build/web"
   functions = "netlify/functions"
 
@@ -13,11 +13,11 @@
   FLUTTER_ROOT = "/opt/buildhome/flutter"
 
 [context.production]
-  command = "bash install-flutter.sh && export PATH=\"$PATH:/opt/buildhome/flutter/bin\" && node build-config.js && flutter build web --release --web-renderer canvaskit"
+  command = "bash install-flutter.sh && export PATH=\"$PATH:/opt/buildhome/flutter/bin\" && node build-config.js && flutter build web --release"
   publish = "build/web"
 
 [context.deploy-preview]
-  command = "bash install-flutter.sh && export PATH=\"$PATH:/opt/buildhome/flutter/bin\" && node build-config.js && flutter build web --release --web-renderer canvaskit"
+  command = "bash install-flutter.sh && export PATH=\"$PATH:/opt/buildhome/flutter/bin\" && node build-config.js && flutter build web --release"
   publish = "build/web"
 
 # SPA redirect - all routes go to index.html
